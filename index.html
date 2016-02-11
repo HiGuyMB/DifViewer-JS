@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DIF Viewer</title>
+
+    <!-- Make it pretty! -->
+    <link rel="stylesheet" href="styles/styles.css">
+
+    <!-- Pretty useful math library -->
+    <script src="lib/gl-matrix-min.js"></script>
+
+    <!-- Javascript GL classes -->
+    <script src="scripts/shader.js"></script>
+    <script src="scripts/vbo.js"></script>
+    <script src="scripts/texture.js"></script>
+    <script src="scripts/material.js"></script>
+
+    <!-- The actual model itself -->
+    <script src="model/model.js"></script>
+
+    <!-- Main GL and rendering -->
+    <script src="scripts/gl.js"></script>
+
+    <!-- Window, cursor, and keyboard control -->
+    <script src="scripts/input.js"></script>
+</head>
+<body>
+<canvas id="screen"></canvas>
+<div id="fpsMeter"></div>
+
+<!-- Don't start up the GL stuff until we've loaded the body -->
+<script type="text/javascript">initGL();</script>
+</body>
+</html>
