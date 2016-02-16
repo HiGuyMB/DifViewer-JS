@@ -14,6 +14,7 @@ function initGL() {
 	/** @type {WebGLRenderingContext} gl */
 	gl = canvas.getContext("webgl");
 	fpsMeter = document.getElementById("fpsMeter");
+	testDiv = document.getElementById("test");
 
 	//Clear state
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -25,13 +26,15 @@ function initGL() {
 	initBuffers();
 	initTextures();
 
+	initPhysics();
+
 	//Then start running!
 	window.requestAnimFrame(render);
 }
 
 function initShaders() {
 	//One shader for now
-	shader = new Shader("shaders/vertex.glsl", "shaders/fragment.glsl");
+	shader = new Shader("shaders/interiorV.glsl", "shaders/interiorF.glsl");
 }
 
 function initBuffers() {
@@ -61,6 +64,76 @@ function initTextures() {
 	});
 }
 
+function initPhysics() {
+	var config     = new Ammo.btDefaultCollisionConfiguration();
+	dispatcher     = new Ammo.btCollisionDispatcher(config);
+	var broadphase = new Ammo.btDbvtBroadphase();
+	var solver     = new Ammo.btSequentialImpulseConstraintSolver();
+	world          = new Ammo.btDiscreteDynamicsWorld(dispatcher, broadphase, solver, config);
+	world.setGravity(new Ammo.btVector3(0, 0, -20));
+
+	{
+		var state = new Ammo.btDefaultMotionState();
+		var shape = new Ammo.btSphereShape(0.3);
+
+		var fallInertia = new Ammo.btVector3(0, 0, 0);
+		shape.calculateLocalInertia(1.0, fallInertia);
+		shape.setMargin(0.01);
+
+		//Update position
+		var transform = new Ammo.btTransform();
+		transform.setIdentity();
+
+		state.setWorldTransform(transform);
+
+		//Construction info
+		var info = new Ammo.btRigidBodyConstructionInfo(1, state, shape, fallInertia);
+		info.set_m_restitution(0.5); // 0.5 * 0.7
+		info.set_m_friction(1.0);
+		info.set_m_rollingFriction(0.3);
+
+		//Create the actor and add it to the scene
+		sphere = new Ammo.btRigidBody(info);
+		sphere.setActivationState(4);
+		sphere.setCcdMotionThreshold(1e-3);
+		sphere.setCcdSweptSphereRadius(0.3 / 10.0);
+		sphere.setRollingFriction(3.0);
+		sphere.setContactProcessingThreshold(0.0);
+
+		world.addRigidBody(sphere);
+	}
+	{
+		var state = new Ammo.btDefaultMotionState();
+		var mesh  = new Ammo.btTriangleMesh();
+
+		for (var i = 0; i < model.faces.length; i += 3 * 14) {
+			var v0 = new Ammo.btVector3(model.faces[i + (14 * 0) + 0], model.faces[i + (14 * 0) + 1], model.faces[i + (14 * 0) + 2]);
+			var v1 = new Ammo.btVector3(model.faces[i + (14 * 1) + 0], model.faces[i + (14 * 1) + 1], model.faces[i + (14 * 1) + 2]);
+			var v2 = new Ammo.btVector3(model.faces[i + (14 * 2) + 0], model.faces[i + (14 * 2) + 1], model.faces[i + (14 * 2) + 2]);
+
+			mesh.addTriangle(v0, v1, v2);
+		}
+
+		var shape = new Ammo.btBvhTriangleMeshShape(mesh, true, true);
+		shape.setMargin(0.01);
+
+		var transform = new Ammo.btTransform();
+		transform.setIdentity();
+
+		state.setWorldTransform(transform);
+
+		var inertia = new Ammo.btVector3(0, 0, 0);
+		var info = new Ammo.btRigidBodyConstructionInfo(0, state, shape, inertia);
+		info.set_m_restitution(0.5); // 0.5 * 0.7
+		info.set_m_friction(1.0);
+		info.set_m_rollingFriction(0.3);
+
+		var actor = new Ammo.btRigidBody(info);
+
+		world.addRigidBody(actor);
+	}
+}
+
 function render(timestamp) {
 	//Get the delta time since the last frame
 	var delta = 0;
@@ -70,6 +143,15 @@ function render(timestamp) {
 		fpsMeter.innerHTML = (1000 / delta) + " FPS";
 	}
 	lastTimestamp = timestamp;
+
+	world.stepSimulation(delta, 2);
+	var transform = new Ammo.btTransform();
+	sphere.getMotionState().getWorldTransform(transform);
+
+	var origin = transform.getOrigin();
+	testDiv.innerHTML = origin.x() + " " + origin.y() + " " + origin.z();
+
+	var marblePos = [origin.x(), origin.y(), origin.z()];
 
 	//Check if the window updated its size. If so, we need to update the canvas and viewport to match.
 	var density = 1;
@@ -83,7 +165,7 @@ function render(timestamp) {
 	//Movement direction based on keyboard input
 	var movement = vec3.create();
 	//Movement speed is faster if you hold the mouse button
-	var moveSpeed = (mouseState[0] ? 30.0 : 10.0);
+	var moveSpeed = (mouseState[0] ? 300.0 : 100.0);
 
 	if (keyState.forward) {
 		movement[1] += (delta / 1000) * moveSpeed;
@@ -104,11 +186,11 @@ function render(timestamp) {
 
 	//Get the position components of this matrix for the camera position offset
 	var offset = vec3.fromValues(movementMat[12], movementMat[13], movementMat[14]);
-	vec3.add(cameraPosition, cameraPosition, offset);
+	sphere.applyTorque(new Ammo.btVector3(offset[0], offset[1], offset[2]));
 
 	//Get the inverse camera position because we move the world instead of the camera
 	var inverseCamera = vec3.create();
-	vec3.scale(inverseCamera, cameraPosition, -1);
+	vec3.scale(inverseCamera, marblePos, -1);
 
 	//Three fundamental matrices
 	var projectionMat = mat4.create();
