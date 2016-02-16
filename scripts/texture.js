@@ -1,14 +1,22 @@
-function Texture(src) {
+function Texture(src, fallback) {
+	this.fallback = fallback;
+	this.usingFallback = false;
+
 	this.tex = gl.createTexture();
 
 	//Download the image data
 	this.image = new Image();
 	this.image.onload = this.imageLoaded.bind(this);
+	this.image.onerror = this.imageError.bind(this);
 	this.image.src = src;
 
 	//So we can tell if we've loaded
 	this.loaded = false;
 }
+
+Texture.DEFAULT_DIFFUSE_TEXTURE  = "assets/DefaultDiffuse.png";
+Texture.DEFAULT_NORMAL_TEXTURE   = "assets/DefaultNormal.png";
+Texture.DEFAULT_SPECULAR_TEXTURE = "assets/DefaultSpec.png";
 
 Texture.prototype.imageLoaded = function() {
 	//Set up the texture with the image data we downloaded
@@ -28,6 +36,15 @@ Texture.prototype.imageLoaded = function() {
 	//Clean up
 	gl.bindTexture(gl.TEXTURE_2D, null);
 	this.loaded = true;
+};
+
+Texture.prototype.imageError = function() {
+	if (this.usingFallback) {
+		//TODO: Errors
+	} else {
+		this.usingFallback = true;
+		this.image.src = this.fallback;
+	}
 };
 
 Texture.prototype.activate = function(shader, uniform, location) {

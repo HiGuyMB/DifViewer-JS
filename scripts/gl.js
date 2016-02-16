@@ -26,7 +26,7 @@ function initGL() {
 	initTextures();
 
 	//Then start running!
-	render();
+	window.requestAnimFrame(render);
 }
 
 function initShaders() {
@@ -53,9 +53,9 @@ function initTextures() {
 		if (tex.count > 0) {
 			//Default material names with .alpha / .normal
 			materials[i] = new Material([
-				new Texture("model/" + tex.texture.toLowerCase() + ".jpg"),        //Diffuse
-				new Texture("model/" + tex.texture.toLowerCase() + ".normal.png"), //Normal
-				new Texture("model/" + tex.texture.toLowerCase() + ".alpha.jpg")   //Specular
+				new Texture("model/" + tex.texture.toLowerCase() + ".jpg",        Texture.DEFAULT_DIFFUSE_TEXTURE), //Diffuse
+				new Texture("model/" + tex.texture.toLowerCase() + ".normal.png", Texture.DEFAULT_NORMAL_TEXTURE),  //Normal
+				new Texture("model/" + tex.texture.toLowerCase() + ".alpha.jpg",  Texture.DEFAULT_SPECULAR_TEXTURE) //Specular
 			]);
 		}
 	});
