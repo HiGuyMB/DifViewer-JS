@@ -127,11 +127,10 @@ function initPhysics() {
 
 		var inertia = new Ammo.btVector3(0, 0, 0);
 		var info = new Ammo.btRigidBodyConstructionInfo(0, state, shape, inertia);
-		info.set_m_restitution(0.5); // 0.5 * 0.7
-		info.set_m_friction(0.4);
-		info.set_m_rollingFriction(0.3);
 
 		var actor = new Ammo.btRigidBody(info);
+		actor.setRestitution(1.0);
+		actor.setFriction(1.0);
 
 		world.addRigidBody(actor);
 	}
@@ -147,7 +146,7 @@ function render(timestamp) {
 	}
 	lastTimestamp = timestamp;
 
-	world.stepSimulation(delta, 2);
+	world.stepSimulation(delta, 1);
 	var transform = new Ammo.btTransform();
 	physSphere.getMotionState().getWorldTransform(transform);
 
@@ -167,31 +166,7 @@ function render(timestamp) {
 		gl.viewport(0, 0, canvas.clientWidth * density, canvas.clientHeight * density);
 	}
 
-	//Movement direction based on keyboard input
-	var movement = vec3.create();
-	//Movement speed is faster if you hold the mouse button
-	var moveSpeed = (mouseState[0] ? 300.0 : 100.0);
-
-	if (keyState.forward) {
-		movement[0] -= (delta / 1000) * moveSpeed;
-	} else if (keyState.backward) {
-		movement[0] += (delta / 1000) * moveSpeed;
-	}
-	if (keyState.right) {
-		movement[1] += (delta / 1000) * moveSpeed;
-	} else if (keyState.left) {
-		movement[1] -= (delta / 1000) * moveSpeed;
-	}
-
-	//Rotate the movement by the camera direction so we move relative to that
-	var movementMat = mat4.create();
-	mat4.rotate(movementMat, movementMat, -cameraRotation[0], [0, 0, 1]);
-	mat4.rotate(movementMat, movementMat, -cameraRotation[1], [1, 0, 0]);
-	mat4.translate(movementMat, movementMat, movement);
-
-	//Get the position components of this matrix for the camera position offset
-	var offset = vec3.fromValues(movementMat[12], movementMat[13], movementMat[14]);
-	physSphere.applyTorque(new Ammo.btVector3(offset[0], offset[1], offset[2]));
+	sphere.updateMovement(delta / 1000.0);
 
 	//Get the inverse camera position because we move the world instead of the camera
 	var inverseCamera = vec3.create();

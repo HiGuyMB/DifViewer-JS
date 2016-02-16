@@ -84,3 +84,93 @@ Sphere.prototype.render = function(projectionMat, viewMat, modelMat) {
 		this.shader.deactivate();
 	}
 };
+
+Sphere.prototype.updateMovement = function(delta) {
+	//Apply the camera yaw to a matrix so our rolling is based on the camera direction
+	var deltaMat = mat4.create();
+	mat4.identity(deltaMat);
+	mat4.rotate(deltaMat, deltaMat, -cameraRotation[0], [0, 0, 1]);
+
+	//Convert the movement into a vector
+	var move = vec3.create();
+	if (keyState.forward) move[1] ++;
+	if (keyState.backward) move[1] --;
+	if (keyState.left) move[0] --;
+	if (keyState.right) move[0] ++;
+
+	var inverseDeltaMat = mat4.create();
+	mat4.invert(inverseDeltaMat, deltaMat);
+	mat4.translate(inverseDeltaMat, inverseDeltaMat, jsVec3(physSphere.getLinearVelocity()));
+
+	//Linear velocity relative to camera yaw (for capping)
+	var linRel = vec3.create();
+	mat4.getPosition(linRel, inverseDeltaMat);
+
+	mat4.identity(inverseDeltaMat);
+	mat4.invert(inverseDeltaMat, deltaMat);
+	mat4.translate(inverseDeltaMat, inverseDeltaMat, jsVec3(physSphere.getLinearVelocity()));
+
+	var angRel = vec3.create();
+	mat4.getPosition(angRel, inverseDeltaMat);
+	vec3.cross(angRel, angRel, [0, 0, 1]);
+
+	var torque = vec3.clone(move);
+	vec3.scale(torque, torque, 750.0 * delta * this.radius);
+
+	if (this.getColliding()) {
+		//Don't let us go faster than the max velocity in any direction.
+		if (torque[0] > 0 && torque[0] + linRel[0] >  15.0) torque[0] = Math.max(0.0,  15.0 - linRel[0]);
+		if (torque[1] > 0 && torque[1] + linRel[1] >  15.0) torque[1] = Math.max(0.0,  15.0 - linRel[1]);
+		//Same for backwards
+		if (torque[0] < 0 && torque[0] + linRel[0] < -15.0) torque[0] = Math.min(0.0, -15.0 - linRel[0]);
+		if (torque[1] < 0 && torque[1] + linRel[1] < -15.0) torque[1] = Math.min(0.0, -15.0 - linRel[1]);
+	} else {
+		//Don't let us roll faster than the max air roll velocity
+		if (torque[0] > 0 && torque[0] + angRel[0] >  50) torque[0] = Math.max(0.0,  50 - angRel[0]);
+		if (torque[1] > 0 && torque[1] + angRel[1] >  50) torque[1] = Math.max(0.0,  50 - angRel[1]);
+		if (torque[0] < 0 && torque[0] + angRel[0] < -50) torque[0] = Math.min(0.0, -50 - angRel[0]);
+		if (torque[1] < 0 && torque[1] + angRel[1] < -50) torque[1] = Math.min(0.0, -50 - angRel[1]);
+	}
+
+	//Torque is based on the movement and yaw
+	var deltaTorqueMat = mat4.clone(deltaMat);
+	mat4.translate(deltaTorqueMat, deltaTorqueMat, torque);
+
+	var torqueRel = vec3.create();
+	mat4.getPosition(torqueRel, deltaTorqueMat);
+	vec3.scale(torqueRel, torqueRel, 1.0); //Mass
+
+	//Cross to convert 3d coordinates into torque
+	vec3.cross(torqueRel, [0, 0, 1], torqueRel);
+	physSphere.applyTorque(ammoVec3(torqueRel));
+
+	if (this.getColliding()) {
+	} else {
+		deltaTorqueMat = mat4.clone(deltaMat);
+		mat4.translate(deltaTorqueMat, deltaTorqueMat, move);
+
+		var moveRel = vec3.create();
+		mat4.getPosition(moveRel, deltaTorqueMat);
+		vec3.scale(moveRel, moveRel, 5.0 * delta);
+
+		//If we're not touching the ground, apply slight air movement.
+		physSphere.applyImpulse(ammoVec3(moveRel), ammoVec3([0, 0, 0]));
+	}
+};
+
+Sphere.prototype.getColliding = function() {
+	var manifolds = world.getDispatcher().getNumManifolds();
+
+	for (var i = 0; i < manifolds; i ++) {
+		var manifold = world.getDispatcher().getManifoldByIndexInternal(i);
+		var obj1 = manifold.getBody0();
+		var obj2 = manifold.getBody1();
+
+		if (Ammo.compare(obj1, physSphere) || Ammo.compare(obj2, physSphere)) {
+			if (manifold.getNumContacts() > 0)
+				return true;
+		}
+	}
+
+	return false;
+};
