@@ -6,5 +6,5 @@ varying vec3 out_normal;
 uniform sampler2D tex_diffuse;
 
 void main() {
-    gl_FragColor = texture2D(tex_diffuse, out_uv);
+    gl_FragColor = texture2D(tex_diffuse, (out_uv + 1.0) / 2.0);
 }

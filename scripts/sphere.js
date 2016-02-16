@@ -55,7 +55,7 @@ Sphere.prototype.generate = function() {
 	}
 
 	//Generate a buffer
-	this.vbo = new VBO(pointData, gl.TRIANGLES, 8, pointData.length / 8);
+	this.vbo = new VBO(pointData, gl.TRIANGLE_STRIP, 8, pointData.length / 8);
 	this.vbo.addAttribute("in_position", 3, gl.FLOAT, false, 0);
 	this.vbo.addAttribute("in_uv",       2, gl.FLOAT, false, 3);
 	this.vbo.addAttribute("in_normal",   3, gl.FLOAT, false, 5);
