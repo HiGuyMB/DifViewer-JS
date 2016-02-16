@@ -48,6 +48,9 @@ function initBuffers() {
 	vbo.addAttribute("in_normal", 3, gl.FLOAT, false, 5);
 	vbo.addAttribute("in_tangent", 3, gl.FLOAT, false, 8);
 	vbo.addAttribute("in_bitangent", 3, gl.FLOAT, false, 11);
+
+	sphere = new Sphere(0.3);
+	sphere.generate();
 }
 
 function initTextures() {
@@ -93,14 +96,14 @@ function initPhysics() {
 		info.set_m_rollingFriction(0.3);
 
 		//Create the actor and add it to the scene
-		sphere = new Ammo.btRigidBody(info);
-		sphere.setActivationState(4);
-		sphere.setCcdMotionThreshold(1e-3);
-		sphere.setCcdSweptSphereRadius(0.3 / 10.0);
-		sphere.setRollingFriction(3.0);
-		sphere.setContactProcessingThreshold(0.0);
+		physSphere = new Ammo.btRigidBody(info);
+		physSphere.setActivationState(4);
+		physSphere.setCcdMotionThreshold(1e-3);
+		physSphere.setCcdSweptSphereRadius(0.3 / 10.0);
+		physSphere.setRollingFriction(3.0);
+		physSphere.setContactProcessingThreshold(0.0);
 
-		world.addRigidBody(sphere);
+		world.addRigidBody(physSphere);
 	}
 	{
 		var state = new Ammo.btDefaultMotionState();
@@ -125,7 +128,7 @@ function initPhysics() {
 		var inertia = new Ammo.btVector3(0, 0, 0);
 		var info = new Ammo.btRigidBodyConstructionInfo(0, state, shape, inertia);
 		info.set_m_restitution(0.5); // 0.5 * 0.7
-		info.set_m_friction(1.0);
+		info.set_m_friction(0.4);
 		info.set_m_rollingFriction(0.3);
 
 		var actor = new Ammo.btRigidBody(info);
@@ -146,12 +149,14 @@ function render(timestamp) {
 
 	world.stepSimulation(delta, 2);
 	var transform = new Ammo.btTransform();
-	sphere.getMotionState().getWorldTransform(transform);
+	physSphere.getMotionState().getWorldTransform(transform);
 
 	var origin = transform.getOrigin();
+	var rotation = transform.getRotation();
 	testDiv.innerHTML = origin.x() + " " + origin.y() + " " + origin.z();
 
 	var marblePos = [origin.x(), origin.y(), origin.z()];
+	var marbleRot = [rotation.x(), rotation.y(), rotation.z(), rotation.w()];
 
 	//Check if the window updated its size. If so, we need to update the canvas and viewport to match.
 	var density = 1;
@@ -168,14 +173,14 @@ function render(timestamp) {
 	var moveSpeed = (mouseState[0] ? 300.0 : 100.0);
 
 	if (keyState.forward) {
-		movement[1] += (delta / 1000) * moveSpeed;
+		movement[0] -= (delta / 1000) * moveSpeed;
 	} else if (keyState.backward) {
-		movement[1] -= (delta / 1000) * moveSpeed;
+		movement[0] += (delta / 1000) * moveSpeed;
 	}
 	if (keyState.right) {
-		movement[0] += (delta / 1000) * moveSpeed;
+		movement[1] += (delta / 1000) * moveSpeed;
 	} else if (keyState.left) {
-		movement[0] -= (delta / 1000) * moveSpeed;
+		movement[1] -= (delta / 1000) * moveSpeed;
 	}
 
 	//Rotate the movement by the camera direction so we move relative to that
@@ -186,7 +191,7 @@ function render(timestamp) {
 
 	//Get the position components of this matrix for the camera position offset
 	var offset = vec3.fromValues(movementMat[12], movementMat[13], movementMat[14]);
-	sphere.applyTorque(new Ammo.btVector3(offset[0], offset[1], offset[2]));
+	physSphere.applyTorque(new Ammo.btVector3(offset[0], offset[1], offset[2]));
 
 	//Get the inverse camera position because we move the world instead of the camera
 	var inverseCamera = vec3.create();
@@ -200,14 +205,19 @@ function render(timestamp) {
 	//Basic perspective
 	mat4.perspective(projectionMat, glMatrix.toRadian(90), canvas.clientWidth / canvas.clientHeight, 0.1, 500.0);
 
+	var rotMat = mat4.create();
+
 	//Basic view matrix too
-	mat4.identity(viewMat);
+	mat4.identity(rotMat);
+	//Camera orientation
+	mat4.rotate(rotMat, rotMat, cameraRotation[1], [1, 0, 0]);
+	mat4.rotate(rotMat, rotMat, cameraRotation[0], [0, 0, 1]);
+
 	//Because we like having the Z axis be up instead of Y
 	mat4.rotate(viewMat, viewMat, glMatrix.toRadian(-90), [1, 0, 0]);
-	//Camera orientation
-	mat4.rotate(viewMat, viewMat, cameraRotation[1], [1, 0, 0]);
-	mat4.rotate(viewMat, viewMat, cameraRotation[0], [0, 0, 1]);
-	//And offset
+
+	mat4.translate(viewMat, viewMat, [0, 2.5, 0]);
+	mat4.multiply(viewMat, viewMat, rotMat);
 	mat4.translate(viewMat, viewMat, inverseCamera);
 
 	//Nothing for model yet
@@ -260,6 +270,11 @@ function render(timestamp) {
 		});
 		shader.deactivate();
 	}
+
+	modelMat = mat4.create();
+	mat4.fromRotationTranslation(modelMat, marbleRot, marblePos);
+
+	sphere.render(projectionMat, viewMat, modelMat);
 
 	//Tell the browser to get us the next frame
 	window.requestAnimFrame(render);
