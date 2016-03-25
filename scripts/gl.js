@@ -14,7 +14,6 @@ function initGL() {
 	/** @type {WebGLRenderingContext} gl */
 	gl = canvas.getContext("webgl");
 	fpsMeter = document.getElementById("fpsMeter");
-	testDiv = document.getElementById("test");
 
 	//Clear state
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -152,7 +151,6 @@ function render(timestamp) {
 
 	var origin = transform.getOrigin();
 	var rotation = transform.getRotation();
-	testDiv.innerHTML = origin.x() + " " + origin.y() + " " + origin.z();
 
 	var marblePos = [origin.x(), origin.y(), origin.z()];
 	var marbleRot = [rotation.x(), rotation.y(), rotation.z(), rotation.w()];

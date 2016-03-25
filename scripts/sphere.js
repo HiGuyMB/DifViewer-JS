@@ -145,6 +145,28 @@ Sphere.prototype.updateMovement = function(delta) {
 	physSphere.applyTorque(ammoVec3(torqueRel));
 
 	if (this.getColliding()) {
+		////Impact velocity is stored when we collide so we can use it here
+		//var impactVelocity;
+		////Get collision information
+		//var normal = getCollisionNormal(impactVelocity);
+		//var vel = mActor->getLinearVelocity();
+		//
+		//// dot against up vector to determine if we can jump
+		//// TODO: take gravities into account
+		//var up = vec3.fromValues(0, 0, 1);
+		//if (mMovement.jump && glm::dot(up, normal) > 0.001f) {
+		//	glm::vec3 currentVelocity = glm::proj(vel, normal);
+		//
+		//	glm::vec3 projVel = glm::proj(vel, normal);
+		//
+		//	if (glm::length(projVel) < JumpImpulse) {
+		//		glm::vec3 finalVelocity = vel - currentVelocity + (normal * JumpImpulse);
+		//		setLinearVelocity(finalVelocity);
+		//		IO::printf("Jump! Impact velocity: %f %f %f\n   final Velocity: %f %f %f\n    Projection velocity: %f %f %f\n    Dot: %f\n", vel.x, vel.y, vel.z, finalVelocity.x, finalVelocity.y, finalVelocity.z, projVel.x, projVel.y, projVel.z, glm::dot(up, normal));
+		//	} else {
+		//		IO::printf("No jump, projection velocity is %f %f %f\n", projVel.x, projVel.y, projVel.z);
+		//	}
+		//}
 	} else {
 		deltaTorqueMat = mat4.clone(deltaMat);
 		mat4.translate(deltaTorqueMat, deltaTorqueMat, move);

@@ -6,7 +6,8 @@ var keyState = {
 	forward: false,
 	backward: false,
 	left: false,
-	right: false
+	right: false,
+	jump: false
 };
 
 //Mouse button state (just as an array)
@@ -61,6 +62,8 @@ document.onkeydown = function(e) {
 		case 83: //s
 			keyState.right = true;
 			break;
+		case 32: //space
+			keyState.jump = true;
 	}
 };
 
@@ -79,6 +82,8 @@ document.onkeyup = function(e) {
 		case 83: //s
 			keyState.right = false;
 			break;
+		case 32: //space
+			keyState.jump = false;
 	}
 };
 
