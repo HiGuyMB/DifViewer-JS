@@ -63,11 +63,15 @@ function initTextures() {
 	//Load each material in the model
 	model.textures.forEach(function(tex, i) {
 		if (tex.count > 0) {
+			var materialInfo = getMaterialInfo(tex.texture);
+
+			var texture = (typeof(materialInfo.replacement) === "undefined" ? tex.texture : materialInfo.replacement).toLowerCase();
+
 			//Default material names with .alpha / .normal
 			materials[i] = new Material([
-				new Texture("model/" + tex.texture.toLowerCase() + ".jpg",        Texture.DEFAULT_DIFFUSE_TEXTURE), //Diffuse
-				new Texture("model/" + tex.texture.toLowerCase() + ".normal.png", Texture.DEFAULT_NORMAL_TEXTURE),  //Normal
-				new Texture("model/" + tex.texture.toLowerCase() + ".alpha.jpg",  Texture.DEFAULT_SPECULAR_TEXTURE) //Specular
+				new Texture("model/" + texture.toLowerCase() + ".jpg",        Texture.DEFAULT_DIFFUSE_TEXTURE), //Diffuse
+				new Texture("model/" + texture.toLowerCase() + ".normal.png", Texture.DEFAULT_NORMAL_TEXTURE),  //Normal
+				new Texture("model/" + texture.toLowerCase() + ".alpha.jpg",  Texture.DEFAULT_SPECULAR_TEXTURE) //Specular
 			]);
 		}
 	});
@@ -169,6 +173,8 @@ function render(timestamp) {
 		materials.forEach(function(mat, i) {
 			//Model tex allows us to know starts/counts for triangles
 			var modelTex = model.textures[i];
+			
+			var materialInfo = getMaterialInfo(model.textures[i].texture);
 
 			//Don't try to render if the texture is still loading
 			if (mat.isLoaded()) {
@@ -185,6 +191,9 @@ function render(timestamp) {
 				gl.uniform4fv(shader.getUniformLocation("in_ambient_color"), [0.7, 0.7, 0.7, 1.0]);
 				gl.uniform3fv(shader.getUniformLocation("in_sun_position"), [100.0, 75.0, 100.0]);
 				gl.uniform1f(shader.getUniformLocation("in_specular_exponent"), 7);
+
+				//Scale
+				gl.uniform2fv(shader.getUniformLocation("in_scale"), materialInfo.scale);
 
 				//Activate the current material
 				mat.activate(shader, ["tex_diffuse", "tex_normal", "tex_specular"], [gl.TEXTURE0, gl.TEXTURE1, gl.TEXTURE2]);

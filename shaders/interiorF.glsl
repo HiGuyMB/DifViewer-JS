@@ -15,10 +15,14 @@ uniform vec4 in_ambient_color;
 uniform vec3 in_sun_position;
 uniform float in_specular_exponent;
 
+uniform vec2 in_scale;
+
 void main(void) {
-    vec3 materialColor = texture2D(tex_diffuse, out_uv).rgb;
-    vec3 specularColor = texture2D(tex_specular, out_uv).rgb;
-    vec3 normalColor = normalize(texture2D(tex_normal, out_uv).rgb * 2.0 - 1.0);
+	vec2 scaled_uv = out_uv * in_scale;
+
+    vec3 materialColor = texture2D(tex_diffuse, scaled_uv).rgb;
+    vec3 specularColor = texture2D(tex_specular, scaled_uv).rgb;
+    vec3 normalColor = normalize(texture2D(tex_normal, scaled_uv).rgb * 2.0 - 1.0);
 
     vec3 n = normalize(normalColor);
     vec3 l = normalize(out_light_tangent);
