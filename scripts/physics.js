@@ -22,6 +22,8 @@ function initPhysics() {
 		//Update position
 		var transform = new Ammo.btTransform();
 		transform.setIdentity();
+		var origin = new Ammo.btVector3(0, 0, 10);
+		transform.setOrigin(origin);
 
 		state.setWorldTransform(transform);
 
@@ -85,11 +87,17 @@ function updatePhysics(delta) {
 	sphere.updateMovement(delta / 1000.0);
 }
 
-function physicsRender() {
+function physicsRender(projectionMat, viewMat) {
+	var transform = new Ammo.btTransform();
+	physSphere.getMotionState().getWorldTransform(transform);
+
+	var origin = transform.getOrigin();
+	var rotation = transform.getRotation();
+
 	var marblePos = [origin.x(), origin.y(), origin.z()];
 	var marbleRot = [rotation.x(), rotation.y(), rotation.z(), rotation.w()];
 
-	modelMat = mat4.create();
+	var modelMat = mat4.create();
 	mat4.fromRotationTranslation(modelMat, marbleRot, marblePos);
 
 	sphere.render(projectionMat, viewMat, modelMat);

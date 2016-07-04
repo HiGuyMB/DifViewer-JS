@@ -60,7 +60,7 @@ Sphere.prototype.generate = function() {
 	this.vbo.addAttribute("in_uv",       2, gl.FLOAT, false, 3);
 	this.vbo.addAttribute("in_normal",   3, gl.FLOAT, false, 5);
 
-	this.material = new Material([
+	this.material = new Material(0, [
 		new Texture("assets/marble.png", Texture.DEFAULT_DIFFUSE_TEXTURE)
 	]);
 

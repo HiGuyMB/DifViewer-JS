@@ -36,7 +36,13 @@
     <script src="scripts/input.js"></script>
 </head>
 <body>
-<input type="file" id="picker" name="picker[]" multiple>
+<div id="input">
+	<label for="picker">DIF File: <input type="file" id="picker"></label><br>
+	<div id="difInfo"></div>
+	<label for="physics">Physics (test): <input type="checkbox" id="physics" checked></label><br>
+	<label for="shaders">Shaders (MBU Noise Tiles / Ice): <input type="checkbox" id="shaders" checked></label><br>
+	<input type="submit" value="Load" id="load">
+</div>
 <div id="fpsMeter"></div>
 
 <!-- Don't start up the GL stuff until we've loaded the body -->
@@ -53,12 +59,20 @@
 			var dif = new DIF(rawBytes);
 			model = dif.getModel(0);
 
-			initGL();
+			var infoDiv = document.getElementById("difInfo");
+			infoDiv.innerHTML = "Loaded " + (model.faces.length / 14) + " triangles.";
+
+			physics = document.getElementById("physics").checked;
+			customShaders = document.getElementById("shaders").checked;
 		};
 		reader.readAsArrayBuffer(file);
 	}
 
 	document.getElementById("picker").addEventListener("change", handleDifSelect, false);
+
+	document.getElementById("load").addEventListener("click", function(e) {
+		initGL();
+	}, false);
 </script>
 </body>
 </html>

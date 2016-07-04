@@ -9,7 +9,8 @@ var cameraRotation = vec2.create();
 var time = 0;
 var lastTimestamp = null;
 
-var physics = false;
+var physics = true;
+var customShaders = true;
 
 function initGL() {
 	canvas = document.createElement("canvas");
@@ -38,10 +39,12 @@ function initGL() {
 }
 
 function initShaders() {
-	//One shader for now
-	shaders["default"] = new Shader("shaders/interiorV.glsl", "shaders/interiorF.glsl");
-	shaders["noise"]   = new Shader("shaders/interiorV.glsl", "shaders/noise_tileF.glsl");
-	shaders["ice"]     = new Shader("shaders/interiorV.glsl", "shaders/iceF.glsl");
+	shaders["default"]   = new Shader("shaders/interiorV.glsl", "shaders/interiorF.glsl");
+
+	if (customShaders) {
+		shaders["noise"] = new Shader("shaders/interiorV.glsl", "shaders/noise_tileF.glsl");
+		shaders["ice"]   = new Shader("shaders/interiorV.glsl", "shaders/iceF.glsl");
+	}
 }
 
 function initBuffers() {
@@ -222,7 +225,7 @@ function render(timestamp) {
 	});
 
 	if (physics) {
-		physicsRender();
+		physicsRender(projectionMat, viewMat);
 	}
 
 	//Tell the browser to get us the next frame
