@@ -12,7 +12,9 @@ var lastTimestamp = null;
 var physics = false;
 
 function initGL() {
-	canvas = document.getElementById("screen");
+	canvas = document.createElement("canvas");
+	canvas.setAttribute("id", "screen");
+	document.body.appendChild(canvas);
 	/** @type {WebGLRenderingContext} gl */
 	gl = canvas.getContext("webgl");
 	fpsMeter = document.getElementById("fpsMeter");
@@ -84,7 +86,31 @@ function render(timestamp) {
 	if (physics) {
 		updatePhysics(delta);
 	} else {
-		
+		//Movement direction based on keyboard input
+		var movement = vec3.create();
+		//Movement speed is faster if you hold the mouse button
+		var moveSpeed = (mouseState[0] ? 30.0 : 10.0);
+
+		if (keyState.forward) {
+			movement[1] += (delta / 1000) * moveSpeed;
+		} else if (keyState.backward) {
+			movement[1] -= (delta / 1000) * moveSpeed;
+		}
+		if (keyState.right) {
+			movement[0] += (delta / 1000) * moveSpeed;
+		} else if (keyState.left) {
+			movement[0] -= (delta / 1000) * moveSpeed;
+		}
+
+		//Rotate the movement by the camera direction so we move relative to that
+		var movementMat = mat4.create();
+		mat4.rotate(movementMat, movementMat, -cameraRotation[0], [0, 0, 1]);
+		mat4.rotate(movementMat, movementMat, -cameraRotation[1], [1, 0, 0]);
+		mat4.translate(movementMat, movementMat, movement);
+
+		//Get the position components of this matrix for the camera position offset
+		var offset = vec3.fromValues(movementMat[12], movementMat[13], movementMat[14]);
+		vec3.add(cameraPosition, cameraPosition, offset);
 	}
 
 	//Check if the window updated its size. If so, we need to update the canvas and viewport to match.

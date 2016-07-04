@@ -18,12 +18,15 @@
     <script src="scripts/texture.js"></script>
     <script src="scripts/material.js"></script>
 
-    <!-- The actual model itself -->
-    <script src="model/model.js"></script>
-
     <!-- Whoooo -->
     <script src="scripts/physics.js"></script>
     <script src="scripts/sphere.js"></script>
+
+	<!-- DIF library -->
+	<script src="scripts/dif/dif.js"></script>
+	<script src="scripts/dif/reader.js"></script>
+	<script src="scripts/dif/interior.js"></script>
+	<script src="scripts/dif/math.js"></script>
 
     <!-- Main GL and rendering -->
     <script src="scripts/gl.js"></script>
@@ -32,10 +35,29 @@
     <script src="scripts/input.js"></script>
 </head>
 <body>
-<canvas id="screen"></canvas>
+<input type="file" id="picker" name="picker[]" multiple>
 <div id="fpsMeter"></div>
 
 <!-- Don't start up the GL stuff until we've loaded the body -->
-<script type="text/javascript">initGL();</script>
+<script type="text/javascript">
+	function handleDifSelect(e) {
+		var files = e.target.files;
+		var file = files[0];
+
+		var reader = new FileReader();
+		reader.onload = function(e) {
+			var raw = e.target.result;
+			var rawBytes = new Uint8Array(raw);
+
+			var dif = new DIF(rawBytes);
+			model = dif.getModel(0);
+
+			initGL();
+		};
+		reader.readAsArrayBuffer(file);
+	}
+
+	document.getElementById("picker").addEventListener("change", handleDifSelect, false);
+</script>
 </body>
 </html>
