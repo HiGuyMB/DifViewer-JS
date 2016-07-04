@@ -18,7 +18,7 @@ uniform mat4 in_model_mat;
 
 uniform vec4 in_light_color;
 uniform vec4 in_ambient_color;
-uniform vec3 in_sun_position;
+uniform vec3 in_sun_direction;
 uniform float in_specular_exponent;
 
 highp mat3 transpose(in highp mat3 in_matrix) {
@@ -37,10 +37,9 @@ void main(void) {
     out_normal = in_normal;
 
     vec3 position_camera = (in_view_mat * in_model_mat * vec4(in_position, 1)).xyz;
-    vec3 out_direction_camera = vec3(0, 0, 0) - position_camera;
+    vec3 direction_camera = vec3(0, 0, 0) - position_camera;
 
-    vec3 lightPos_camera = (in_view_mat * vec4(in_sun_position, 1)).xyz;
-    vec3 light_camera = lightPos_camera + out_direction_camera;
+    vec3 light_camera = -(in_view_mat * vec4(in_sun_direction, 0)).xyz;
 
     mat3 modelView3Mat = mat3(in_view_mat * in_model_mat);
 
@@ -51,5 +50,5 @@ void main(void) {
     mat3 tbn = transpose(mat3(tangent_camera, bitangent_camera, normal_camera));
 
     out_light_tangent = tbn * light_camera;
-    out_direction_tangent = tbn * out_direction_camera;
+    out_direction_tangent = tbn * direction_camera;
 }

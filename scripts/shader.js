@@ -1,6 +1,7 @@
 function Shader(vertSrc, fragSrc) {
 	this.attributes = {};
 	this.uniforms = {};
+	this.materials = {};
 
 	//So we can tell if we're still downloading
 	this.loaded = false;

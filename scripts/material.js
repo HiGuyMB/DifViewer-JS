@@ -1,4 +1,5 @@
-function Material(textures) {
+function Material(index, textures) {
+	this.index = index;
 	this.textures = textures;
 }
 

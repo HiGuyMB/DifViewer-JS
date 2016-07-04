@@ -17,8 +17,18 @@ uniform float in_specular_exponent;
 
 uniform vec2 in_scale;
 
+#define SHADE_INTENSITY 0.4
+#define SHADE_CENTER 0.9
+
+float noise(vec2 co) {
+	return fract(sin(dot(co.xy, vec2(12.9898,78.233))) * 43758.5453);
+}
+
 void main(void) {
 	vec2 scaled_uv = out_uv * in_scale;
+
+	float shade = noise(floor(scaled_uv));
+	shade = SHADE_CENTER + (shade * SHADE_INTENSITY);
 
     vec3 materialColor = texture2D(tex_diffuse, scaled_uv).rgb;
     vec3 specularColor = texture2D(tex_specular, scaled_uv).rgb;
@@ -35,6 +45,7 @@ void main(void) {
 
     vec3 color = materialColor * (in_light_color.rgb * in_light_color.a) * cosTheta;
     color += materialColor * in_ambient_color.rgb;
+    color *= shade;
     color += specularColor * (in_light_color.rgb * in_light_color.a) * pow(cosAlpha, in_specular_exponent);
 
     gl_FragColor = vec4(color, 1.0);

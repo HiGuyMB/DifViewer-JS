@@ -1,5 +1,5 @@
 //List of materials to be loaded from the model
-var materials = [];
+var shaders = {};
 
 //Initial camera parameters
 var cameraPosition = vec3.create();
@@ -39,7 +39,8 @@ function initGL() {
 
 function initShaders() {
 	//One shader for now
-	shader = new Shader("shaders/interiorV.glsl", "shaders/interiorF.glsl");
+	shaders["default"] = new Shader("shaders/interiorV.glsl", "shaders/interiorF.glsl");
+	shaders["noise"]   = new Shader("shaders/interiorV.glsl", "shaders/noise_tileF.glsl");
 }
 
 function initBuffers() {
@@ -65,10 +66,14 @@ function initTextures() {
 		if (tex.count > 0) {
 			var materialInfo = getMaterialInfo(tex.texture);
 
+			var shader = shaders[materialInfo.shader];
 			var texture = (typeof(materialInfo.replacement) === "undefined" ? tex.texture : materialInfo.replacement).toLowerCase();
 
+			if (typeof(shader) === "undefined")
+				return;
+
 			//Default material names with .alpha / .normal
-			materials[i] = new Material([
+			shader.materials[tex.texture] = new Material(i, [
 				new Texture("model/" + texture.toLowerCase() + ".jpg",        Texture.DEFAULT_DIFFUSE_TEXTURE), //Diffuse
 				new Texture("model/" + texture.toLowerCase() + ".normal.png", Texture.DEFAULT_NORMAL_TEXTURE),  //Normal
 				new Texture("model/" + texture.toLowerCase() + ".alpha.jpg",  Texture.DEFAULT_SPECULAR_TEXTURE) //Specular
@@ -156,58 +161,64 @@ function render(timestamp) {
 	//Nothing for model yet
 	mat4.identity(modelMat);
 
+	//Clear the screen before each render
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	gl.enable(gl.DEPTH_TEST);
+	gl.depthFunc(gl.LEQUAL);
+
+	gl.enable(gl.CULL_FACE);
+	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
 	//Don't try to render if we don't have a shader loaded
-	if (shader.loaded) {
-		//Clear the screen before each render
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		gl.enable(gl.DEPTH_TEST);
-		gl.depthFunc(gl.LEQUAL);
+	Object.keys(shaders).forEach(function(shaderName) {
+		var shader = shaders[shaderName];
 
-		gl.enable(gl.CULL_FACE);
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+		if (shader.loaded) {
+			//Load shader outside of the materials loop to optimize
+			shader.activate();
 
-		//Load shader outside of the materials loop to optimize
-		shader.activate();
+			//Render each material's textures
+			Object.keys(shader.materials).forEach(function(matName) {
+				var mat = shader.materials[matName];
 
-		//Render each material's textures
-		materials.forEach(function(mat, i) {
-			//Model tex allows us to know starts/counts for triangles
-			var modelTex = model.textures[i];
-			
-			var materialInfo = getMaterialInfo(model.textures[i].texture);
+				//Model tex allows us to know starts/counts for triangles
+				var modelTex = model.textures[mat.index];
 
-			//Don't try to render if the texture is still loading
-			if (mat.isLoaded()) {
-				//Activate the model
-				vbo.activate(shader);
+				var materialInfo = getMaterialInfo(model.textures[mat.index].texture);
 
-				//Load the matrices into the shader
-				gl.uniformMatrix4fv(shader.getUniformLocation("in_projection_mat"), false, projectionMat);
-				gl.uniformMatrix4fv(shader.getUniformLocation("in_view_mat"), false, viewMat);
-				gl.uniformMatrix4fv(shader.getUniformLocation("in_model_mat"), false, modelMat);
+				//Don't try to render if the texture is still loading
+				if (mat.isLoaded()) {
+					//Activate the model
+					vbo.activate(shader);
 
-				//Hardcoded lighting values for now
-				gl.uniform4fv(shader.getUniformLocation("in_light_color"), [1.0, 0.95, 0.9, 1.0]);
-				gl.uniform4fv(shader.getUniformLocation("in_ambient_color"), [0.7, 0.7, 0.7, 1.0]);
-				gl.uniform3fv(shader.getUniformLocation("in_sun_position"), [100.0, 75.0, 100.0]);
-				gl.uniform1f(shader.getUniformLocation("in_specular_exponent"), 7);
+					//Load the matrices into the shader
+					gl.uniformMatrix4fv(shader.getUniformLocation("in_projection_mat"), false, projectionMat);
+					gl.uniformMatrix4fv(shader.getUniformLocation("in_view_mat"), false, viewMat);
+					gl.uniformMatrix4fv(shader.getUniformLocation("in_model_mat"), false, modelMat);
 
-				//Scale
-				gl.uniform2fv(shader.getUniformLocation("in_scale"), materialInfo.scale);
+					//Get light values from the info
+					gl.uniform4fv(shader.getUniformLocation("in_light_color"), materialInfo.lightColor);
+					gl.uniform4fv(shader.getUniformLocation("in_ambient_color"), materialInfo.ambientColor);
+					gl.uniform3fv(shader.getUniformLocation("in_sun_direction"), materialInfo.sunDirection);
+					gl.uniform1f(shader.getUniformLocation("in_specular_exponent"), materialInfo.specularExponent);
 
-				//Activate the current material
-				mat.activate(shader, ["tex_diffuse", "tex_normal", "tex_specular"], [gl.TEXTURE0, gl.TEXTURE1, gl.TEXTURE2]);
+					//Scale
+					gl.uniform2fv(shader.getUniformLocation("in_scale"), materialInfo.scale);
 
-				//Actually draw the thing!
-				vbo.draw(modelTex.start * 3, modelTex.count * 3);
+					//Activate the current material
+					mat.activate(shader, ["tex_diffuse", "tex_normal", "tex_specular"], [gl.TEXTURE0, gl.TEXTURE1, gl.TEXTURE2]);
 
-				//Deactivate everything for the next round
-				mat.deactivate();
-				vbo.deactivate(shader);
-			}
-		});
-		shader.deactivate();
-	}
+					//Actually draw the thing!
+					vbo.draw(modelTex.start * 3, modelTex.count * 3);
+
+					//Deactivate everything for the next round
+					mat.deactivate();
+					vbo.deactivate(shader);
+				}
+			});
+			shader.deactivate();
+		}
+	});
 
 	if (physics) {
 		physicsRender();
