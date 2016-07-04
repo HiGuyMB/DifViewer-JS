@@ -23,8 +23,8 @@ function DIF(bytes) {
 DIF.prototype.getModel = function(index) {
 	var int = this.interiors[index];
 
-	var vertices = int.point;
-	var normals = int.normal;
+	var vertices = int.point.slice();
+	var normals = int.normal.slice();
 	var texCoords = [];
 	var tangents = [];
 	var bitangents = [];
@@ -38,7 +38,7 @@ DIF.prototype.getModel = function(index) {
 
 		var normal = int.normal[int.plane[surface.planeIndex].normalIndex];
 		if (surface.planeFlipped) {
-			vec3.scale(normal, normal, -1);
+			normal = vec3.scale(vec3.create(), normal, -1);
 			normals.push(normal);
 		}
 		for (var i = surface.windingStart + 2; i < surface.windingStart + surface.windingCount; i ++) {

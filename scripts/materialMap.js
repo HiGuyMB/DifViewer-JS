@@ -49,6 +49,9 @@ materialMap["tile_intermediate"]              = new MaterialInfo({shader: "noise
 materialMap["plate_1"]       = new MaterialInfo({scale: [0.5, 0.5]});
 materialMap["friction_high"] = new MaterialInfo({scale: [2, 2]});
 
+materialMap["friction_low"]        = new MaterialInfo({shader: "ice"});
+materialMap["friction_low_shadow"] = new MaterialInfo({shader: "ice"});
+
 function getMaterialInfo(material) {
 	var info = materialMap[material];
 	if (typeof(info) === "undefined") {

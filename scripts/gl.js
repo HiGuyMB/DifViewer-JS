@@ -41,6 +41,7 @@ function initShaders() {
 	//One shader for now
 	shaders["default"] = new Shader("shaders/interiorV.glsl", "shaders/interiorF.glsl");
 	shaders["noise"]   = new Shader("shaders/interiorV.glsl", "shaders/noise_tileF.glsl");
+	shaders["ice"]     = new Shader("shaders/interiorV.glsl", "shaders/iceF.glsl");
 }
 
 function initBuffers() {
@@ -70,7 +71,7 @@ function initTextures() {
 			var texture = (typeof(materialInfo.replacement) === "undefined" ? tex.texture : materialInfo.replacement).toLowerCase();
 
 			if (typeof(shader) === "undefined")
-				return;
+				shader = shaders["default"];
 
 			//Default material names with .alpha / .normal
 			shader.materials[tex.texture] = new Material(i, [
