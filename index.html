@@ -19,6 +19,7 @@
     <script src="scripts/material.js"></script>
 	<script src="scripts/materialMap.js"></script>
 	<script src="scripts/skySphere.js"></script>
+	<script src="scripts/interiorModel.js"></script>
 
     <!-- Whoooo -->
     <script src="scripts/physics.js"></script>
@@ -38,7 +39,7 @@
 </head>
 <body>
 <div id="input">
-	<label for="picker">DIF File: <input type="file" id="picker"></label><br>
+	<label for="picker">DIF File (v0-MBG only): <input type="file" id="picker" multiple></label><br>
 	<div id="difInfo"></div>
 	<label for="physics">Physics (test): <input type="checkbox" id="physics"></label><br>
 	<label for="shaders">Shaders (MBU Noise Tiles / Ice): <input type="checkbox" id="shaders" checked></label><br>
@@ -50,20 +51,23 @@
 <script type="text/javascript">
 	function handleDifSelect(e) {
 		var files = e.target.files;
-		var file = files[0];
+		for (var i = 0; i < files.length; i ++) {
+			var file = files[i];
 
-		var reader = new FileReader();
-		reader.onload = function(e) {
-			var raw = e.target.result;
-			var rawBytes = new Uint8Array(raw);
+			var reader = new FileReader();
+			reader.onload = function(e) {
+				var raw = e.target.result;
+				var rawBytes = new Uint8Array(raw);
 
-			var dif = new DIF(rawBytes);
-			model = dif.getModel(0);
+				var dif = new DIF(rawBytes);
+				var model = dif.getModel(0);
+				models.push(new InteriorModel(model));
 
-			var infoDiv = document.getElementById("difInfo");
-			infoDiv.innerHTML = "Loaded " + (model.faces.length / 14) + " triangles.";
-		};
-		reader.readAsArrayBuffer(file);
+				var infoDiv = document.getElementById("difInfo");
+				infoDiv.innerHTML += "Loaded " + (model.faces.length / 14) + " triangles.<br>";
+			};
+			reader.readAsArrayBuffer(file);
+		}
 	}
 
 	document.getElementById("picker").addEventListener("change", handleDifSelect, false);

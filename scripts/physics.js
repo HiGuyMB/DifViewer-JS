@@ -43,9 +43,11 @@ function initPhysics() {
 
 		world.addRigidBody(physSphere);
 	}
-	{
+	models.forEach(function(intmodel) {
 		var state = new Ammo.btDefaultMotionState();
 		var mesh  = new Ammo.btTriangleMesh();
+
+		var model = intmodel.model;
 
 		for (var i = 0; i < model.faces.length; i += 3 * 14) {
 			var v0 = new Ammo.btVector3(model.faces[i + (14 * 0) + 0], model.faces[i + (14 * 0) + 1], model.faces[i + (14 * 0) + 2]);
@@ -71,7 +73,7 @@ function initPhysics() {
 		actor.setFriction(1.0);
 
 		world.addRigidBody(actor);
-	}
+	});
 }
 
 function updatePhysics(delta) {
