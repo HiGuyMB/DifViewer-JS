@@ -15,7 +15,8 @@ var customShaders = true;
 function initGL() {
 	canvas = document.createElement("canvas");
 	canvas.setAttribute("id", "screen");
-	document.body.appendChild(canvas);
+	document.body.insertBefore(canvas, document.getElementById("input"));
+	document.body.removeChild(document.getElementById("input"));
 	/** @type {WebGLRenderingContext} gl */
 	gl = canvas.getContext("webgl");
 	fpsMeter = document.getElementById("fpsMeter");

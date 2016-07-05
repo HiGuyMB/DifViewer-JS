@@ -62,9 +62,6 @@
 
 			var infoDiv = document.getElementById("difInfo");
 			infoDiv.innerHTML = "Loaded " + (model.faces.length / 14) + " triangles.";
-
-			physics = document.getElementById("physics").checked;
-			customShaders = document.getElementById("shaders").checked;
 		};
 		reader.readAsArrayBuffer(file);
 	}
@@ -72,6 +69,9 @@
 	document.getElementById("picker").addEventListener("change", handleDifSelect, false);
 
 	document.getElementById("load").addEventListener("click", function(e) {
+		physics = document.getElementById("physics").checked;
+		customShaders = document.getElementById("shaders").checked;
+
 		initGL();
 	}, false);
 </script>
