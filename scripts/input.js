@@ -88,11 +88,11 @@ function initInput() {
 	};
 
 	document.onmousemove = function(e) {
-		// if (pointerLock) {
+		if (pointerLock) {
 			//TODO: Adjustable this
 			cameraRotation[0] += e.movementX * 0.01;
 			cameraRotation[1] += e.movementY * 0.01;
-		// }
+		}
 	};
 
 	document.onclick = function(/* e */) {

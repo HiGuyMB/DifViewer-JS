@@ -62,6 +62,11 @@ function initBuffers() {
 	if (physics) {
 		initPhysicsBuffers();
 	}
+
+	sky = new SkySphere(new Material(0, [
+		new Texture("assets/back.png",  "assets/back.png"),
+		new Texture("assets/front.png", "assets/front.png")
+	]));
 }
 
 function initTextures() {
@@ -158,7 +163,9 @@ function render(timestamp) {
 	//Because we like having the Z axis be up instead of Y
 	mat4.rotate(viewMat, viewMat, glMatrix.toRadian(-90), [1, 0, 0]);
 
-	mat4.translate(viewMat, viewMat, [0, 2.5, 0]);
+	if (physics) {
+		mat4.translate(viewMat, viewMat, [0, 2.5, 0]);
+	}
 	mat4.multiply(viewMat, viewMat, rotMat);
 	mat4.translate(viewMat, viewMat, inverseCamera);
 
@@ -172,6 +179,7 @@ function render(timestamp) {
 
 	gl.enable(gl.CULL_FACE);
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+	sky.render(projectionMat, viewMat);
 
 	//Don't try to render if we don't have a shader loaded
 	Object.keys(shaders).forEach(function(shaderName) {
@@ -223,7 +231,6 @@ function render(timestamp) {
 			shader.deactivate();
 		}
 	});
-
 	if (physics) {
 		physicsRender(projectionMat, viewMat);
 	}
