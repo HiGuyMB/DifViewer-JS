@@ -68,6 +68,8 @@ function render(timestamp) {
 
 	if (physics) {
 		updatePhysics(delta);
+	} else if (isRunningReplay()) {
+		updateReplay(delta);
 	} else {
 		//Movement direction based on keyboard input
 		var movement = vec3.create();
@@ -128,7 +130,7 @@ function render(timestamp) {
 	//Because we like having the Z axis be up instead of Y
 	mat4.rotate(viewMat, viewMat, glMatrix.toRadian(-90), [1, 0, 0]);
 
-	if (physics) {
+	if (physics || isRunningReplay()) {
 		mat4.translate(viewMat, viewMat, [0, 2.5, 0]);
 	}
 	mat4.multiply(viewMat, viewMat, rotMat);
@@ -149,6 +151,10 @@ function render(timestamp) {
 
 	if (physics) {
 		physicsRender(projectionMat, viewMat);
+	}
+
+	if (isRunningReplay()) {
+		replayRender(projectionMat, viewMat);
 	}
 
 	//Tell the browser to get us the next frame

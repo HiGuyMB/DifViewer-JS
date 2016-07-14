@@ -1,4 +1,4 @@
-function handleDifSelect(e) {
+document.getElementById("picker").addEventListener("change", function (e) {
 	var files = e.target.files;
 	for (var i = 0; i < files.length; i ++) {
 		var file = files[i];
@@ -42,9 +42,7 @@ function handleDifSelect(e) {
 		})(file);
 		reader.readAsArrayBuffer(file);
 	}
-}
-
-document.getElementById("picker").addEventListener("change", handleDifSelect, false);
+}, false);
 
 document.getElementById("load").addEventListener("click", function(e) {
 	physics = document.getElementById("physics").checked;
@@ -85,3 +83,41 @@ document.getElementById("load").addEventListener("click", function(e) {
 		document.addEventListener("keydown", listener, false);
 	}, false);
 });
+
+document.getElementById("replayCheck").addEventListener("click", function(e) {
+	showReplay = !showReplay;
+	if (showReplay) {
+		document.getElementById("replayBox").style.display = "block";
+	} else {
+		document.getElementById("replayBox").style.display = "none";
+	}
+});
+
+document.getElementById("replayPicker").addEventListener("change", function(e) {
+	var files = e.target.files;
+	for (var i = 0; i < files.length; i ++) {
+		var file = files[i];
+
+		var reader = new FileReader();
+		reader.onload = (function(file) {
+			return function(e) {
+				var raw = e.target.result;
+
+				var infoDiv = document.getElementById("replayInfo");
+				var replay;
+				
+				try {
+					replay = JSON.parse(raw);
+				} catch (err) {
+					infoDiv.innerHTML = "Error.";
+					return;
+				}
+
+				infoDiv.innerHTML = "Loaded replay " + file.name;
+
+				setReplay(replay);
+			};
+		})(file);
+		reader.readAsText(file);
+	}
+}, true);

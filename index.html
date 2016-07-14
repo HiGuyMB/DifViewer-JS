@@ -24,6 +24,7 @@
     <!-- Whoooo -->
     <script src="scripts/physics.js"></script>
     <script src="scripts/sphere.js"></script>
+	<script src="scripts/replay.js"></script>
 
 	<!-- DIF library -->
 	<script src="scripts/dif/dif.js"></script>
@@ -69,9 +70,15 @@
 			<a class="button" id="controlRight"></a>
 		</div>
 	</div>
+	<label for="replayCheck">Replay: <input type="checkbox" id="replayCheck"></label><br>
+	<div id="replayBox" style="display: none;">
+		<label for="replayPicker">Replay File (PQ v0.0): <input type="file" id="replayPicker"></label><br>
+		<div id="replayInfo"></div>
+	</div>
 	<input type="submit" value="Load" id="load">
 </div>
 <div id="fpsMeter"></div>
+<div id="test"></div>
 
 <!-- Load UI here so the DOM is created -->
 <script src="scripts/ui.js"></script>
