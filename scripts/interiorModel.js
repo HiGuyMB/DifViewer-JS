@@ -1,6 +1,7 @@
 function InteriorModel(model) {
 	this.model = model;
 	this.shaders = {};
+	this.position = vec3.create();
 }
 
 InteriorModel.prototype.generateBuffer = function() {
@@ -25,19 +26,24 @@ InteriorModel.prototype.generateBuffer = function() {
 	//Load each material in the model
 	this.model.textures.forEach(function(tex, i) {
 		if (tex.count > 0) {
-			var materialInfo = getMaterialInfo(tex.texture);
+			var texture = tex.texture;
+			if (texture.indexOf("/") !== -1)
+				texture = texture.substr(texture.lastIndexOf("/") + 1);
 
+			var materialInfo = getMaterialInfo(tex.texture);
 			var shader = this.shaders[materialInfo.shader];
-			var texture = (typeof(materialInfo.replacement) === "undefined" ? tex.texture : materialInfo.replacement).toLowerCase();
+
+			if (typeof(materialInfo.replacement) !== "undefined")
+				texture = materialInfo.replacement;
 
 			if (typeof(shader) === "undefined")
 				shader = this.shaders["default"];
 
 			//Default material names with .alpha / .normal
 			shader.materials[tex.texture] = new Material(i, [
-				new Texture("model/" + texture.toLowerCase() + ".jpg",        Texture.DEFAULT_DIFFUSE_TEXTURE), //Diffuse
-				new Texture("model/" + texture.toLowerCase() + ".normal.png", Texture.DEFAULT_NORMAL_TEXTURE),  //Normal
-				new Texture("model/" + texture.toLowerCase() + ".alpha.jpg",  Texture.DEFAULT_SPECULAR_TEXTURE) //Specular
+				new Texture("texture/" + texChoice + "/" + texture.toLowerCase() + ".jpg",        Texture.DEFAULT_DIFFUSE_TEXTURE), //Diffuse
+				new Texture("texture/" + texChoice + "/" + texture.toLowerCase() + ".normal.png", Texture.DEFAULT_NORMAL_TEXTURE),  //Normal
+				new Texture("texture/" + texChoice + "/" + texture.toLowerCase() + ".alpha.jpg",  Texture.DEFAULT_SPECULAR_TEXTURE) //Specular
 			], this);
 		}
 	}, this);
@@ -48,6 +54,7 @@ InteriorModel.prototype.render = function(projectionMat, viewMat) {
 
 	//Nothing for model yet
 	mat4.identity(modelMat);
+	mat4.translate(modelMat, modelMat, this.position);
 
 	//Don't try to render if we don't have a shader loaded
 	Object.keys(this.shaders).forEach(function(shaderName) {

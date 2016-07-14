@@ -12,6 +12,8 @@ var lastTimestamp = null;
 var physics = true;
 var customShaders = true;
 
+var skyChoice = "Clear";
+var texChoice = "custom";
 var models = [];
 
 function initGL() {
@@ -49,8 +51,8 @@ function initBuffers() {
 	}
 
 	sky = new SkySphere(new Material(0, [
-		new Texture("assets/back.png",  "assets/back.png"),
-		new Texture("assets/front.png", "assets/front.png")
+		new Texture("assets/skies/" + skyChoice + "/back.png",  "assets/DefaultSkyBack.png"),
+		new Texture("assets/skies/" + skyChoice + "/front.png", "assets/DefaultSkyFront.png")
 	]));
 }
 

@@ -10,6 +10,14 @@ var keyState = {
 	jump: false
 };
 
+var inputKeys = [
+	{"action": "forward",  "keyCode": 87}, //w
+	{"action": "backward", "keyCode": 82}, //r
+	{"action": "left",     "keyCode": 65}, //a
+	{"action": "right",    "keyCode": 83}, //s
+	{"action": "jump",     "keyCode": 32} //space
+];
+
 //Mouse button state (just as an array)
 var mouseState = [];
 
@@ -48,43 +56,19 @@ function initInput() {
 	}
 
 	document.onkeydown = function(e) {
-		//TODO: Rebinding so people who don't use Colemak can do this too
-		switch (e.keyCode) {
-			case 87: //w
-				keyState.forward = true;
-				break;
-			case 65: //a
-				keyState.left = true;
-				break;
-			case 82: //r
-				keyState.backward = true;
-				break;
-			case 83: //s
-				keyState.right = true;
-				break;
-			case 32: //space
-				keyState.jump = true;
-		}
+		inputKeys.forEach(function(info) {
+			if (e.keyCode === info.keyCode) {
+				keyState[info.action] = true;
+			}
+		});
 	};
 
 	document.onkeyup = function(e) {
-		//TODO: Rebinding so people who don't use Colemak can do this too
-		switch (e.keyCode) {
-			case 87: //w
-				keyState.forward = false;
-				break;
-			case 65: //a
-				keyState.left = false;
-				break;
-			case 82: //r
-				keyState.backward = false;
-				break;
-			case 83: //s
-				keyState.right = false;
-				break;
-			case 32: //space
-				keyState.jump = false;
-		}
+		inputKeys.forEach(function(info) {
+			if (e.keyCode === info.keyCode) {
+				keyState[info.action] = false;
+			}
+		});
 	};
 
 	document.onmousemove = function(e) {

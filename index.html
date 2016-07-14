@@ -40,44 +40,40 @@
 <body>
 <div id="input">
 	<label for="picker">DIF File (v0-MBG only): <input type="file" id="picker" multiple></label><br>
-	<div id="difInfo"></div>
+	<table id="difInfo"></table>
 	<label for="physics">Physics (test): <input type="checkbox" id="physics"></label><br>
 	<label for="shaders">Shaders (MBU Noise Tiles / Ice): <input type="checkbox" id="shaders" checked></label><br>
+	<label for="skyChoice">Sky Sphere:
+		<select id="skyChoice">
+			<option value="Clear" selected>Clear</option>
+			<option value="Dusk">Dusk</option>
+			<option value="Wintry">Wintry</option>
+		</select>
+	</label><br>
+	<label for="texChoice">Texture Album:
+		<select id="texChoice">
+			<option value="custom" selected>Custom</option>
+			<option value="mbg">Gold</option>
+			<option value="mbp">Platinum</option>
+			<option value="mbu">Ultra</option>
+		</select>
+	</label><br>
+	Controls:<br>
+	<div id="controls">
+		<div id="controlsTop">
+			<a class="button" id="controlForward"></a>
+		</div>
+		<div id="controlsBottom">
+			<a class="button" id="controlLeft"></a>
+			<a class="button" id="controlBackward"></a>
+			<a class="button" id="controlRight"></a>
+		</div>
+	</div>
 	<input type="submit" value="Load" id="load">
 </div>
 <div id="fpsMeter"></div>
 
-<!-- Don't start up the GL stuff until we've loaded the body -->
-<script type="text/javascript">
-	function handleDifSelect(e) {
-		var files = e.target.files;
-		for (var i = 0; i < files.length; i ++) {
-			var file = files[i];
-
-			var reader = new FileReader();
-			reader.onload = function(e) {
-				var raw = e.target.result;
-				var rawBytes = new Uint8Array(raw);
-
-				var dif = new DIF(rawBytes);
-				var model = dif.getModel(0);
-				models.push(new InteriorModel(model));
-
-				var infoDiv = document.getElementById("difInfo");
-				infoDiv.innerHTML += "Loaded " + (model.faces.length / 14) + " triangles.<br>";
-			};
-			reader.readAsArrayBuffer(file);
-		}
-	}
-
-	document.getElementById("picker").addEventListener("change", handleDifSelect, false);
-
-	document.getElementById("load").addEventListener("click", function(e) {
-		physics = document.getElementById("physics").checked;
-		customShaders = document.getElementById("shaders").checked;
-
-		initGL();
-	}, false);
-</script>
+<!-- Load UI here so the DOM is created -->
+<script src="scripts/ui.js"></script>
 </body>
 </html>

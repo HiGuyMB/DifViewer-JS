@@ -31,3 +31,70 @@ html, body {
 #test {
     top: 40px;
 }
+
+#controls {
+    position: relative;
+    width: 120px;
+    height: 70px;
+}
+#controlsTop {
+	padding-bottom: 3px;
+}
+#controlForward {
+	margin-left: 36px;
+}
+#controlLeft, #controlRight, #controlForward, #controlBackward {
+	position: relative;
+	display: inline-block;
+	width: 30px;
+	height: 30px;
+	text-align: center;
+	font-family: "Helvetica Neue", "Helvetica", sans-serif;
+}
+
+.button {
+	outline: none;
+	border-radius: 4px;
+	font-size: 13px;
+}
+.button {
+	color: #000;
+	background-color: #ddd;
+	background: -webkit-gradient(linear, 0 0, 0 bottom, from(#fff), to(#ddd));
+	background: -webkit-linear-gradient(#fff, #ddd);
+	background: -moz-linear-gradient(#fff, #ddd);
+	background: -ms-linear-gradient(#fff, #ddd);
+	background: -o-linear-gradient(#fff, #ddd);
+	background: linear-gradient(#fff, #ddd);
+	border: 1px solid #999;
+}
+.button:hover {
+	color: #000;
+	background-color: #ddd;
+	background: -webkit-gradient(linear, 0 0, 0 bottom, from(#eee), to(#ccc));
+	background: -webkit-linear-gradient(#eee, #ccc);
+	background: -moz-linear-gradient(#eee, #ccc);
+	background: -ms-linear-gradient(#eee, #ccc);
+	background: -o-linear-gradient(#eee, #ccc);
+	background: linear-gradient(#eee, #ccc);
+}
+.button:active, .button.active {
+	color: #000;
+	background-color: #ddd;
+	background: -webkit-gradient(linear, 0 0, 0 bottom, from(#ddd), to(#bbb));
+	background: -webkit-linear-gradient(#ddd, #bbb);
+	background: -moz-linear-gradient(#ddd, #bbb);
+	background: -ms-linear-gradient(#ddd, #bbb);
+	background: -o-linear-gradient(#ddd, #bbb);
+	background: linear-gradient(#ddd, #bbb);
+}
+.button[disabled="disabled"] {
+	color: #444;
+	background-color: #ddd;
+	background: -webkit-gradient(linear, 0 0, 0 bottom, from(#aaa), to(#888));
+	background: -webkit-linear-gradient(#aaa, #888);
+	background: -moz-linear-gradient(#aaa, #888);
+	background: -ms-linear-gradient(#aaa, #888);
+	background: -o-linear-gradient(#aaa, #888);
+	background: linear-gradient(#aaa, #888);
+}
